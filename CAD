@@ -1,0 +1,199 @@
+fivem-cad-system/
+│── package.json
+│── tailwind.config.js
+│── postcss.config.js
+│── next.config.js
+│── jsconfig.json
+│── README.md
+│── public/
+│    └── favicon.ico
+│── styles/
+│    └── globals.css
+│── pages/
+│    ├── _app.js
+│    └── index.js
+│── components/
+│    └── CADSystem.js{
+  "name": "fivem-cad-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "framer-motion": "^10.18.0",
+    "next": "13.4.7",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "10.4.15",
+    "postcss": "8.4.29",
+    "tailwindcss": "3.3.3"
+  }
+}
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}"
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};/** @type {import('next').NextConfig} */
+const nextConfig = {};
+
+module.exports = nextConfig;{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-900 text-white;
+}import "@/styles/globals.css";
+
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}import CADSystem from "@/components/CADSystem";
+
+export default function Home() {
+  return <CADSystem />;
+}import { useState } from "react";
+import { motion } from "framer-motion";
+
+const departments = [
+  "Orange County Sheriffs Office",
+  "Florida Highway Patrol",
+  "Florida Police Department",
+  "Civilian"
+];
+
+export default function CADSystem() {
+  const [calls, setCalls] = useState({});
+  const [newCall, setNewCall] = useState("");
+  const [selectedDept, setSelectedDept] = useState(departments[0]);
+  const [balance, setBalance] = useState(5000); // starting balance
+  const [amount, setAmount] = useState("");
+  const [transactions, setTransactions] = useState([]);
+
+  const addCall = () => {
+    if (!newCall.trim()) return;
+    const deptCalls = calls[selectedDept] || [];
+    const updatedCalls = {
+      ...calls,
+      [selectedDept]: [...deptCalls, { id: Date.now(), text: newCall }]
+    };
+    setCalls(updatedCalls);
+    setNewCall("");
+  };
+
+  const addMoney = () => {
+    const value = parseFloat(amount);
+    if (isNaN(value) || value <= 0) return;
+    setBalance(balance + value);
+    setTransactions([...transactions, { id: Date.now(), type: "Deposit", amount: value }]);
+    setAmount("");
+  };
+
+  const subtractMoney = () => {
+    const value = parseFloat(amount);
+    if (isNaN(value) || value <= 0 || balance - value < 0) return;
+    setBalance(balance - value);
+    setTransactions([...transactions, { id: Date.now(), type: "Withdrawal", amount: value }]);
+    setAmount("");
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-3xl font-bold mb-6">FiveM CAD System</h1>
+
+      {/* Money System */}
+      <div className="mb-6 bg-gray-800 shadow-lg rounded-2xl p-4">
+        <h2 className="text-xl font-semibold mb-4">Money System</h2>
+        <p className="mb-4">Balance: <span className="font-bold text-green-400">${balance.toLocaleString()}</span></p>
+
+        <div className="flex gap-2 mb-4">
+          <input
+            className="flex-1 px-2 py-1 rounded text-black"
+            placeholder="Enter amount..."
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <button onClick={addMoney} className="px-3 py-1 bg-green-600 rounded-2xl">Deposit</button>
+          <button onClick={subtractMoney} className="px-3 py-1 bg-red-600 rounded-2xl">Withdraw</button>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Transaction Log</h3>
+          <ul className="space-y-1">
+            {transactions.map(tx => (
+              <li key={tx.id} className="text-sm">
+                [{tx.type}] ${tx.amount.toLocaleString()}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Call System */}
+      <div className="mb-6 bg-gray-800 shadow-lg rounded-2xl p-4">
+        <h2 className="text-xl font-semibold mb-4">Create New Call</h2>
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2">
+            <input
+              className="flex-1 px-2 py-1 rounded text-black"
+              placeholder="Enter call details..."
+              value={newCall}
+              onChange={(e) => setNewCall(e.target.value)}
+            />
+            <button onClick={addCall} className="px-3 py-1 bg-blue-600 rounded-2xl">Add</button>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {departments.map((dept) => (
+              <button
+                key={dept}
+                onClick={() => setSelectedDept(dept)}
+                className={`px-3 py-1 rounded-2xl ${selectedDept === dept ? "bg-blue-500" : "bg-gray-600"}`}
+              >
+                {dept}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <h2 className="text-2xl font-semibold mb-4">{selectedDept} Calls</h2>
+      <div className="grid gap-4">
+        {(calls[selectedDept] || []).map((call) => (
+          <motion.div
+            key={call.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="bg-gray-800 shadow-md rounded-2xl p-4">
+              <p>{call.text}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/cad
+NEXTAUTH_SECRET=super-secret-key
+NEXTAUTH_URL=https://your-site.vercel.app
